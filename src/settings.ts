@@ -15,7 +15,8 @@ const defaultDescs = {
 	"CurlyCloze - Keyword": "The keyword to trigger CurlyCloze on note types.",
 	"CurlyCloze - Highlights to Clozes": "Convert ==highlights== -> {highlights} to be processed by CurlyCloze.",
 	"ID Comments": "Wrap note IDs in a HTML comment.",
-	"Add Obsidian Tags": "Interpret #tags in the fields of a note as Anki tags, removing them from the note text in Anki."
+	"Add Obsidian Tags": "Interpret #tags in the fields of a note as Anki tags, removing them from the note text in Anki.",
+	"Smart Scan": "Skip files that haven't changed since the last scan (based on MD5 hash). Disable to force a full scan."
 }
 
 export const DEFAULT_IGNORED_FILE_GLOBS = [
@@ -125,6 +126,9 @@ export class SettingsTab extends PluginSettingTab {
 		}
 		if (!(plugin.settings["Defaults"].hasOwnProperty("CurlyCloze - Keyword"))) {
 			plugin.settings["Defaults"]["CurlyCloze - Keyword"] = "Cloze"
+		}
+		if (!(plugin.settings["Defaults"].hasOwnProperty("Smart Scan"))) {
+			plugin.settings["Defaults"]["Smart Scan"] = true
 		}
 
 		for (let key of Object.keys(defaultDescs)) {
