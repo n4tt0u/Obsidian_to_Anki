@@ -3,6 +3,28 @@
 This repository is a fork of [Obsidian_to_Anki](https://github.com/Pseudonium/Obsidian_to_Anki).
 It includes additional features and improvements suitable for specific workflows, such as multilingual support and other personal enhancements.
 
+## Installation
+
+Since this is a custom fork, it is not available in the official Obsidian directory. Please use one of the following methods to install.
+
+### Method 1: BRAT (Recommended)
+
+The easiest way to install and keep the plugin updated.
+
+1. Install the **BRAT** plugin from the Obsidian Community Plugins.
+2. Open BRAT settings and click **"Add Beta plugin"**.
+3. Enter the repository URL: `https://github.com/n4tt0u/Obsidian_to_Anki_Kai`
+4. Click **"Add Plugin"**.
+5. Enable **Obsidian_to_Anki_Kai** in Settings -> Community Plugins.
+
+### Method 2: Manual Installation
+
+1. Download `main.js`, `manifest.json`, and `styles.css` from the [Releases Page](https://github.com/n4tt0u/Obsidian_to_Anki_Kai/releases/latest).
+2. Open your vault's plugin folder: `<Vault>/.obsidian/plugins/`.
+3. Create a new folder named `obsidian-to-anki-kai`.
+4. Place the 3 downloaded files into this folder.
+5. Reload Obsidian and enable the plugin.
+
 ## Features Added in This Fork
 
 ### Bug Fixes
