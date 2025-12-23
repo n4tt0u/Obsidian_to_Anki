@@ -5,6 +5,10 @@ It includes additional features and improvements suitable for specific workflows
 
 ## Features Added in This Fork
 
+### Bug Fixes
+
+- **Note Type Field Update**: Fixed an issue where new fields added to Anki Note Types were not reflected in the plugin settings unless the number of Note Types changed. The "Regenerate Note Type Table" button now correctly forces a full update of field definitions.
+
 ### Complete Plugin Redesign (Based on PR #673)
 
 Merged [PR #673](https://github.com/ObsidianToAnki/Obsidian_to_Anki/pull/673) which includes a complete redesign of the plugin with improved UX and new sync features.
