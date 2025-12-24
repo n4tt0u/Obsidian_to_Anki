@@ -95,12 +95,6 @@ If set, only files containing at least one of the specified tags will be process
 > This setting only applies to the **Vault Scan** or **Auto Scan**.
 > If you right-click a file and select "Sync to Anki", it will be **forcefully synced** regardless of whether it matches the "Scan Tags".
 
-### Add File Link Improvements
-
-You can now control the formatting of the file link.
-
-- **Add File Link - Insert Newline**: Toggle whether to insert a newline (`<br>`) before the link.
-
 ### Bulk Delete IDs (Experimental)
 
 A feature to bulk delete Anki cards associated with a specific file.

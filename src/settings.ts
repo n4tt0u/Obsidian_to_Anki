@@ -11,7 +11,6 @@ const defaultDescs = {
 	"Deck": "The deck the plugin adds cards to if TARGET DECK is not specified in the file.",
 	"Scheduling Interval": "The time, in minutes, between automatic scans of the vault. Set this to 0 to disable automatic scanning.",
 	"Add File Link": "Append a link to the file that generated the flashcard on the field specified in the table.",
-	"Add File Link - Insert Newline": "Insert a newline/break before the file link.",
 	"Add Context": "Append 'context' for the card, in the form of path > heading > heading etc, to the field specified in the table.",
 	"Add Aliases": "Append aliases from frontmatter to the field specified in the table.",
 	"CurlyCloze": "Convert {cloze deletions} -> {{c1::cloze deletions}} on note types that have a 'Keyword' in their name.",
@@ -144,9 +143,7 @@ export class SettingsTab extends PluginSettingTab {
 		if (!(plugin.settings["Defaults"].hasOwnProperty("CurlyCloze - Highlights to Clozes"))) {
 			plugin.settings["Defaults"]["CurlyCloze - Highlights to Clozes"] = false
 		}
-		if (!(plugin.settings["Defaults"].hasOwnProperty("Add File Link - Insert Newline"))) {
-			plugin.settings["Defaults"]["Add File Link - Insert Newline"] = true
-		}
+
 		if (!(plugin.settings["Defaults"].hasOwnProperty("Add Obsidian Tags"))) {
 			plugin.settings["Defaults"]["Add Obsidian Tags"] = false
 		}

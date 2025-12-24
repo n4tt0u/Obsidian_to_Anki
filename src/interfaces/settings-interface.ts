@@ -25,7 +25,6 @@ export interface PluginSettings {
 		"Deck": string,
 		"Scheduling Interval": number
 		"Add File Link": boolean,
-		"Add File Link - Insert Newline": boolean,
 		"Add Context": boolean,
 		"Add Aliases": boolean,
 		"CurlyCloze": boolean,
@@ -45,7 +44,6 @@ export interface FileData {
 	fields_dict: FIELDS_DICT
 	custom_regexps: Record<string, string>
 	file_link_fields: Record<string, string>
-	file_link_newline: boolean
 	context_fields: Record<string, string>
 	alias_fields: Record<string, string>
 	template: AnkiConnectNote
