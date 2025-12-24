@@ -77,6 +77,13 @@ Supported formats:
 - List: `tags: \n  - tag1`
 - Array: `tags: [tag1, tag2]`
 
+### Add Aliases
+
+Enable the "Add Aliases" setting in the "General" tab to automatically append aliases from the frontmatter to a specified field.
+
+- **Config**: In "Note Types" settings, select the target field for aliases in the "Aliases Field" column.
+- **Format**: Multiple aliases are separated by a newline (`<br>`) to display as a list in Anki.
+
 ### Scan Tags
 
 You can filter which files to scan based on their tags (both inline `#tags` and Frontmatter tags).

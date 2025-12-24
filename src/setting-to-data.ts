@@ -14,6 +14,7 @@ export async function settingToData(app: App, settings: PluginSettings, fields_d
     result.file_link_fields = settings.FILE_LINK_FIELDS
     result.file_link_newline = settings.Defaults["Add File Link - Insert Newline"]
     result.context_fields = settings.CONTEXT_FIELDS
+    result.alias_fields = settings.ALIAS_FIELDS
     result.folder_decks = settings.FOLDER_DECKS
     result.folder_tags = settings.FOLDER_TAGS
     result.template = {
@@ -42,6 +43,7 @@ export async function settingToData(app: App, settings: PluginSettings, fields_d
     result.add_file_link = settings.Defaults["Add File Link"]
     result.comment = settings.Defaults["ID Comments"]
     result.add_context = settings.Defaults["Add Context"]
+    result.add_aliases = settings.Defaults["Add Aliases"]
     result.add_obs_tags = settings.Defaults["Add Obsidian Tags"]
     result.cloze_keyword = settings.Defaults["CurlyCloze - Keyword"]
     result.smart_scan = settings.Defaults["Smart Scan"]

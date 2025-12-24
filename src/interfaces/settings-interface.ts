@@ -5,6 +5,7 @@ export interface PluginSettings {
 	CUSTOM_REGEXPS: Record<string, string>,
 	FILE_LINK_FIELDS: Record<string, string>,
 	CONTEXT_FIELDS: Record<string, string>,
+	ALIAS_FIELDS: Record<string, string>,
 	FOLDER_DECKS: Record<string, string>,
 	FOLDER_TAGS: Record<string, string>,
 	Syntax: {
@@ -26,6 +27,7 @@ export interface PluginSettings {
 		"Add File Link": boolean,
 		"Add File Link - Insert Newline": boolean,
 		"Add Context": boolean,
+		"Add Aliases": boolean,
 		"CurlyCloze": boolean,
 		"CurlyCloze - Highlights to Clozes": boolean,
 		"ID Comments": boolean,
@@ -45,6 +47,7 @@ export interface FileData {
 	file_link_fields: Record<string, string>
 	file_link_newline: boolean
 	context_fields: Record<string, string>
+	alias_fields: Record<string, string>
 	template: AnkiConnectNote
 	EXISTING_IDS: number[]
 	vault_name: string
@@ -60,6 +63,7 @@ export interface FileData {
 	highlights_to_cloze: boolean
 	comment: boolean
 	add_context: boolean
+	add_aliases: boolean
 	add_obs_tags: boolean
 	cloze_keyword: string
 	yaml_tags: boolean

@@ -13,6 +13,7 @@ const defaultDescs = {
 	"Add File Link": "Append a link to the file that generated the flashcard on the field specified in the table.",
 	"Add File Link - Insert Newline": "Insert a newline/break before the file link.",
 	"Add Context": "Append 'context' for the card, in the form of path > heading > heading etc, to the field specified in the table.",
+	"Add Aliases": "Append aliases from frontmatter to the field specified in the table.",
 	"CurlyCloze": "Convert {cloze deletions} -> {{c1::cloze deletions}} on note types that have a 'Keyword' in their name.",
 	"CurlyCloze - Keyword": "The keyword to trigger CurlyCloze on note types.",
 	"CurlyCloze - Highlights to Clozes": "Convert ==highlights== -> {highlights} to be processed by CurlyCloze.",
@@ -134,6 +135,9 @@ export class SettingsTab extends PluginSettingTab {
 		if (!(plugin.settings["Defaults"].hasOwnProperty("Add Context"))) {
 			plugin.settings["Defaults"]["Add Context"] = false
 		}
+		if (!(plugin.settings["Defaults"].hasOwnProperty("Add Aliases"))) {
+			plugin.settings["Defaults"]["Add Aliases"] = false
+		}
 		if (!(plugin.settings["Defaults"].hasOwnProperty("Scheduling Interval"))) {
 			plugin.settings["Defaults"]["Scheduling Interval"] = 0
 		}
@@ -157,6 +161,9 @@ export class SettingsTab extends PluginSettingTab {
 		}
 		if (!(plugin.settings["Defaults"].hasOwnProperty("Bulk Delete IDs"))) {
 			plugin.settings["Defaults"]["Bulk Delete IDs"] = false
+		}
+		if (!(plugin.settings["Defaults"].hasOwnProperty("Add Aliases"))) {
+			plugin.settings["Defaults"]["Add Aliases"] = false
 		}
 
 		for (let key of Object.keys(defaultDescs)) {
@@ -229,19 +236,22 @@ export class SettingsTab extends PluginSettingTab {
 		const tableContainer = container.createDiv()
 		const searchableTable = new SearchableTable(
 			tableContainer,
-			['Note Type', 'Custom Regexp', 'File Link Field', 'Context Field'],
+			['Note Type', 'Custom Regexp', 'File Link Field', 'Context Field', 'Aliases Field'],
 			'Search note types...'
 		)
 
 		if (!(plugin.settings.hasOwnProperty("CONTEXT_FIELDS"))) {
 			plugin.settings.CONTEXT_FIELDS = {}
 		}
+		if (!(plugin.settings.hasOwnProperty("ALIAS_FIELDS"))) {
+			plugin.settings.ALIAS_FIELDS = {}
+		}
 
 		for (let note_type of plugin.note_types) {
 			const row = searchableTable.addRow()
 			const cells: HTMLTableCellElement[] = []
 
-			for (let i = 0; i < 4; i++) {
+			for (let i = 0; i < 5; i++) {
 				cells.push(searchableTable.insertCell(row))
 			}
 
@@ -249,6 +259,7 @@ export class SettingsTab extends PluginSettingTab {
 			this.setup_custom_regexp(note_type, cells, plugin)
 			this.setup_link_field(note_type, cells, plugin)
 			this.setup_context_field(note_type, cells, plugin)
+			this.setup_alias_field(note_type, cells, plugin)
 		}
 	}
 
@@ -499,7 +510,31 @@ export class SettingsTab extends PluginSettingTab {
 			)
 		context_field.settingEl = cells[3]
 		context_field.infoEl.remove()
+		context_field.infoEl.remove()
 		context_field.controlEl.className += " anki-center"
+	}
+
+	setup_alias_field(note_type: string, cells: HTMLTableCellElement[], plugin: any) {
+		let alias_fields_section: Record<string, string> = plugin.settings.ALIAS_FIELDS
+		let alias_field = new Setting(cells[4])
+			.addDropdown(
+				async dropdown => {
+					const field_names = plugin.fields_dict[note_type]
+					for (let field of field_names) {
+						dropdown.addOption(field, field)
+					}
+					dropdown.setValue(
+						alias_fields_section.hasOwnProperty(note_type) ? alias_fields_section[note_type] : field_names[0]
+					)
+					dropdown.onChange((value) => {
+						plugin.settings.ALIAS_FIELDS[note_type] = value
+						plugin.saveAllData()
+					})
+				}
+			)
+		alias_field.settingEl = cells[4]
+		alias_field.infoEl.remove()
+		alias_field.controlEl.className += " anki-center"
 	}
 
 	get_folders(): TFolder[] {

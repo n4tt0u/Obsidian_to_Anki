@@ -90,6 +90,7 @@ abstract class AbstractFile {
     note_ids: Array<number | null>
     card_ids: number[]
     tags: string[]
+    aliases: string[]
 
     formatter: FormatConverter
 
@@ -153,6 +154,18 @@ abstract class AbstractFile {
                 } else {
                     this.global_tags = tags_str;
                 }
+            }
+        }
+    }
+
+    setup_aliases() {
+        this.aliases = []
+        if (this.file_cache.frontmatter && this.file_cache.frontmatter.aliases) {
+            let aliases = this.file_cache.frontmatter.aliases
+            if (Array.isArray(aliases)) {
+                this.aliases = aliases
+            } else if (typeof aliases === 'string') {
+                this.aliases = [aliases]
             }
         }
     }
@@ -306,6 +319,7 @@ export class AllFile extends AbstractFile {
         this.setup_frozen_fields_dict()
         this.setup_target_deck()
         this.setup_global_tags()
+        this.setup_aliases()
         this.add_spans_to_ignore()
         this.notes_to_add = []
         this.inline_notes_to_add = []
@@ -333,7 +347,8 @@ export class AllFile extends AbstractFile {
                 this.url,
                 this.frozen_fields_dict,
                 this.data,
-                this.data.add_context ? this.getContextAtIndex(note_match.index) : ""
+                this.data.add_context ? this.getContextAtIndex(note_match.index) : "",
+                this.aliases
             )
             if (parsed.identifier == null) {
                 // Need to make sure global_tags get added
@@ -372,7 +387,8 @@ export class AllFile extends AbstractFile {
                 this.url,
                 this.frozen_fields_dict,
                 this.data,
-                this.data.add_context ? this.getContextAtIndex(note_match.index) : ""
+                this.data.add_context ? this.getContextAtIndex(note_match.index) : "",
+                this.aliases
             )
             if (parsed.identifier == null) {
                 // Need to make sure global_tags get added
@@ -410,7 +426,8 @@ export class AllFile extends AbstractFile {
                         this.url,
                         this.frozen_fields_dict,
                         this.data,
-                        this.data.add_context ? this.getContextAtIndex(match.index) : ""
+                        this.data.add_context ? this.getContextAtIndex(match.index) : "",
+                        this.aliases
                     )
                     if (search_id) {
                         if (!(this.data.EXISTING_IDS.includes(parsed.identifier))) {

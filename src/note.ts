@@ -81,7 +81,7 @@ abstract class AbstractNote {
 
     abstract getFields(): Record<string, string>
 
-    parse(deck: string, url: string, frozen_fields_dict: FROZEN_FIELDS_DICT, data: FileData, context: string): AnkiConnectNoteAndID {
+    parse(deck: string, url: string, frozen_fields_dict: FROZEN_FIELDS_DICT, data: FileData, context: string, aliases: string[] = []): AnkiConnectNoteAndID {
         let template = JSON.parse(JSON.stringify(data.template))
         template["modelName"] = this.note_type
         if (this.no_note_type) {
@@ -98,6 +98,13 @@ abstract class AbstractNote {
         if (context) {
             const context_field = data.context_fields[this.note_type]
             template["fields"][context_field] += context
+        }
+        if (data.add_aliases && aliases.length > 0) {
+            const alias_field = data.alias_fields[this.note_type]
+            if (alias_field) {
+                // Use <br> for newline separation as requested
+                template["fields"][alias_field] += (template["fields"][alias_field] ? "<br>" : "") + aliases.join("<br>")
+            }
         }
         if (data.add_obs_tags) {
             for (let key in template["fields"]) {
@@ -289,7 +296,7 @@ export class RegexNote {
         return fields
     }
 
-    parse(deck: string, url: string = "", frozen_fields_dict: FROZEN_FIELDS_DICT, data: FileData, context: string): AnkiConnectNoteAndID {
+    parse(deck: string, url: string = "", frozen_fields_dict: FROZEN_FIELDS_DICT, data: FileData, context: string, aliases: string[] = []): AnkiConnectNoteAndID {
         let template = JSON.parse(JSON.stringify(data.template))
         template["modelName"] = this.note_type
         template["fields"] = this.getFields()
@@ -303,6 +310,13 @@ export class RegexNote {
         if (context) {
             const context_field = data.context_fields[this.note_type]
             template["fields"][context_field] += context
+        }
+        if (data.add_aliases && aliases.length > 0) {
+            const alias_field = data.alias_fields[this.note_type]
+            if (alias_field) {
+                // Use <br> for newline separation as requested
+                template["fields"][alias_field] += (template["fields"][alias_field] ? "<br>" : "") + aliases.join("<br>")
+            }
         }
         if (this.note_type.includes(this.cloze_keyword) && !(note_has_clozes(template))) {
             this.identifier = CLOZE_ERROR //An error code that says "don't add this note!"
