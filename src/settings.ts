@@ -643,6 +643,7 @@ export class SettingsTab extends PluginSettingTab {
 								new Notice('Generating fields dictionary...')
 								try {
 									plugin.fields_dict = await plugin.generateFieldsDict()
+									plugin.validateSelectedFields() // Fix invalid selections
 									new Notice("Fields dictionary successfully generated!")
 								}
 								catch (e) {

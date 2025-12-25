@@ -169,6 +169,39 @@ export default class MyPlugin extends Plugin {
 		}
 	}
 
+	validateSelectedFields() {
+		// Validates that the selected fields for each note type are still valid.
+		// If a field is no longer valid (e.g. was renamed or deleted in Anki), it resets to the first available field.
+		for (const note_type of this.note_types) {
+			const availableFields = this.fields_dict[note_type];
+			if (!availableFields || availableFields.length === 0) continue;
+
+			// Check File Link Field
+			const currentLinkField = this.settings.FILE_LINK_FIELDS[note_type];
+			if (currentLinkField && !availableFields.includes(currentLinkField)) {
+				this.settings.FILE_LINK_FIELDS[note_type] = availableFields[0];
+			}
+
+			// Check Context Field
+			const currentContextField = this.settings.CONTEXT_FIELDS[note_type];
+			if (currentContextField && !availableFields.includes(currentContextField)) {
+				// Keep as "" (None) if it was None and granular control allows it, checks for validity otherwise
+				if (currentContextField !== "") {
+					this.settings.CONTEXT_FIELDS[note_type] = availableFields[0];
+				}
+			}
+
+			// Check Alias Field
+			const currentAliasField = this.settings.ALIAS_FIELDS[note_type];
+			if (currentAliasField && !availableFields.includes(currentAliasField)) {
+				// Keep as "" (None) if it was None and granular control allows it, checks for validity otherwise
+				if (currentAliasField !== "") {
+					this.settings.ALIAS_FIELDS[note_type] = availableFields[0];
+				}
+			}
+		}
+	}
+
 	/**
 	 * Recursively traverse a TFolder and return all TFiles.
 	 * @param tfolder - The TFolder to start the traversal from.
