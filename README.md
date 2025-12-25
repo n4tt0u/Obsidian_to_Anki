@@ -51,6 +51,20 @@ Merged [PR #673](https://github.com/ObsidianToAnki/Obsidian_to_Anki/pull/673) wh
 - **Progress Modal**: Real-time status updates during sync.
 - **Status Bar**: Visual indicator of sync state.
 
+### Note Type Granular Control
+
+Provides finer control over "Add File Link", "Add Context", and "Add Aliases" settings.
+
+- **Enable**: Go to Settings -> **Advanced** and toggle "**Note Type Granular Control**".
+- **ON State**:
+  - The global toggles for these features are hidden.
+  - Instead, you configure these settings per **Note Type**.
+  - In the "Note Types" tab, each Note Type now allows you to select a target field or **"None"** (empty selection) for Link, Context, and Aliases.
+  - **Effect**: You can have file links added for "Basic" notes but disabled for "Cloze" notes, etc.
+- **OFF State**:
+  - The classic behavior applies. Global toggles (in the "General" tab) control these features for ALL note types.
+  - **Fallback Behavior**: When switching from ON to OFF, if any Note Type was set to "None", it is automatically reset to the default field. This ensures that the global toggle works as expected immediately.
+
 ### Configurable CurlyCloze Keyword
 
 The keyword used to identify Cloze Note Types for CurlyCloze syntax (`{...}` -> `{{c1::...}}`) is now configurable.

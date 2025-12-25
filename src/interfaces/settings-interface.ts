@@ -34,7 +34,8 @@ export interface PluginSettings {
 		"CurlyCloze - Keyword": string,
 		"Smart Scan": boolean,
 		"Add Obsidian YAML Tags": boolean,
-		"Bulk Delete IDs": boolean
+		"Bulk Delete IDs": boolean,
+		"Note Type Granular Control": boolean
 	},
 	IGNORED_FILE_GLOBS: string[]
 }
@@ -65,6 +66,7 @@ export interface FileData {
 	add_obs_tags: boolean
 	cloze_keyword: string
 	yaml_tags: boolean
+	note_type_granular_control: boolean
 }
 
 export interface ParsedSettings extends FileData {

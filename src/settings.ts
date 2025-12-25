@@ -159,14 +159,22 @@ export class SettingsTab extends PluginSettingTab {
 		if (!(plugin.settings["Defaults"].hasOwnProperty("Bulk Delete IDs"))) {
 			plugin.settings["Defaults"]["Bulk Delete IDs"] = false
 		}
-		if (!(plugin.settings["Defaults"].hasOwnProperty("Add Aliases"))) {
-			plugin.settings["Defaults"]["Add Aliases"] = false
+
+		if (!(plugin.settings["Defaults"].hasOwnProperty("Note Type Granular Control"))) {
+			plugin.settings["Defaults"]["Note Type Granular Control"] = false
 		}
 
 		for (let key of Object.keys(defaultDescs)) {
 			// Skip Scan Directory (already added above) and Regex
-			if (key === "Scan Directory" || key === "Scan Tags" || key === "Regex" || key === "Bulk Delete IDs") {
+			if (key === "Scan Directory" || key === "Scan Tags" || key === "Regex" || key === "Bulk Delete IDs" || key === "Note Type Granular Control") {
 				continue
+			}
+
+			// If Granular Control is ON, skip the global toggles for Link/Context/Aliases
+			if (plugin.settings["Defaults"]["Note Type Granular Control"]) {
+				if (key === "Add File Link" || key === "Add Context" || key === "Add Aliases") {
+					continue
+				}
 			}
 
 			if (typeof plugin.settings["Defaults"][key] === "string") {
@@ -350,6 +358,42 @@ export class SettingsTab extends PluginSettingTab {
 					plugin.saveAllData()
 				})
 			)
+
+		new Setting(container)
+			.setName("Note Type Granular Control")
+			.setDesc("Enables per-Note Type configuration for 'Add File Link', 'Add Context', and 'Add Aliases', replacing the global toggles.")
+			.addToggle(toggle => toggle
+				.setValue(plugin.settings.Defaults["Note Type Granular Control"])
+				.onChange(async (value) => {
+					plugin.settings.Defaults["Note Type Granular Control"] = value
+
+					// If turning OFF, reset any "None" fields to their default (first) field
+					if (!value) {
+						if (Object.keys(plugin.fields_dict).length === 0) {
+							plugin.fields_dict = await plugin.loadFieldsDict()
+						}
+
+						if (Object.keys(plugin.fields_dict).length > 0) {
+							for (const note_type in plugin.fields_dict) {
+								const defaultField = plugin.fields_dict[note_type][0] || "";
+
+								if (!plugin.settings.CONTEXT_FIELDS[note_type]) {
+									plugin.settings.CONTEXT_FIELDS[note_type] = defaultField;
+								}
+								if (!plugin.settings.FILE_LINK_FIELDS[note_type]) {
+									plugin.settings.FILE_LINK_FIELDS[note_type] = defaultField;
+								}
+								if (!plugin.settings.ALIAS_FIELDS[note_type]) {
+									plugin.settings.ALIAS_FIELDS[note_type] = defaultField;
+								}
+							}
+						}
+					}
+
+					plugin.saveAllData()
+					this.display() // Refresh the UI to show/hide global settings
+				})
+			)
 	}
 
 	private setup_ignore_files(container: HTMLElement, plugin: any) {
@@ -470,6 +514,9 @@ export class SettingsTab extends PluginSettingTab {
 						}
 					}
 					const field_names = plugin.fields_dict[note_type]
+					if (plugin.settings.Defaults["Note Type Granular Control"]) {
+						dropdown.addOption("", "None")
+					}
 					for (let field of field_names) {
 						dropdown.addOption(field, field)
 					}
@@ -493,6 +540,9 @@ export class SettingsTab extends PluginSettingTab {
 			.addDropdown(
 				async dropdown => {
 					const field_names = plugin.fields_dict[note_type]
+					if (plugin.settings.Defaults["Note Type Granular Control"]) {
+						dropdown.addOption("", "None")
+					}
 					for (let field of field_names) {
 						dropdown.addOption(field, field)
 					}
@@ -517,6 +567,9 @@ export class SettingsTab extends PluginSettingTab {
 			.addDropdown(
 				async dropdown => {
 					const field_names = plugin.fields_dict[note_type]
+					if (plugin.settings.Defaults["Note Type Granular Control"]) {
+						dropdown.addOption("", "None")
+					}
 					for (let field of field_names) {
 						dropdown.addOption(field, field)
 					}

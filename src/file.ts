@@ -102,6 +102,16 @@ abstract class AbstractFile {
         this.original_file = this.file
         this.file_cache = file_cache
         this.formatter = new FormatConverter(file_cache, this.data.vault_name)
+        this.target_deck = data.template.deckName
+        this.global_tags = data.template.tags.join(TAG_SEP)
+    }
+
+    getShouldAddContext(note_type: string): boolean {
+        if (this.data.note_type_granular_control) {
+            const contextField = this.data.context_fields[note_type];
+            return (contextField !== "" && contextField !== undefined);
+        }
+        return this.data.add_context;
     }
 
     setup_frozen_fields_dict() {
@@ -335,19 +345,21 @@ export class AllFile extends AbstractFile {
         for (let note_match of this.file.matchAll(this.data.NOTE_REGEXP)) {
             let [note, position]: [string, number] = [note_match[1], note_match.index + note_match[0].indexOf(note_match[1]) + note_match[1].length]
             // That second thing essentially gets the index of the end of the first capture group.
-            let parsed = new Note(
+            let note_obj = new Note(
                 note,
                 this.data.fields_dict,
                 this.data.curly_cloze,
                 this.data.highlights_to_cloze,
                 this.formatter,
                 this.data.cloze_keyword
-            ).parse(
+            )
+            let context = this.getShouldAddContext(note_obj.note_type) ? this.getContextAtIndex(note_match.index) : ""
+            let parsed = note_obj.parse(
                 this.target_deck,
                 this.url,
                 this.frozen_fields_dict,
                 this.data,
-                this.data.add_context ? this.getContextAtIndex(note_match.index) : "",
+                context,
                 this.aliases
             )
             if (parsed.identifier == null) {
@@ -375,19 +387,21 @@ export class AllFile extends AbstractFile {
         for (let note_match of this.file.matchAll(this.data.INLINE_REGEXP)) {
             let [note, position]: [string, number] = [note_match[1], note_match.index + note_match[0].indexOf(note_match[1]) + note_match[1].length]
             // That second thing essentially gets the index of the end of the first capture group.
-            let parsed = new InlineNote(
+            let note_obj = new InlineNote(
                 note,
                 this.data.fields_dict,
                 this.data.curly_cloze,
                 this.data.highlights_to_cloze,
                 this.formatter,
                 this.data.cloze_keyword
-            ).parse(
+            )
+            let context = this.getShouldAddContext(note_obj.note_type) ? this.getContextAtIndex(note_match.index) : ""
+            let parsed = note_obj.parse(
                 this.target_deck,
                 this.url,
                 this.frozen_fields_dict,
                 this.data,
-                this.data.add_context ? this.getContextAtIndex(note_match.index) : "",
+                context,
                 this.aliases
             )
             if (parsed.identifier == null) {
@@ -418,15 +432,17 @@ export class AllFile extends AbstractFile {
                 let regexp: RegExp = new RegExp(regexp_str + tag_str + id_str, 'gm')
                 for (let match of findignore(regexp, this.file, this.ignore_spans)) {
                     this.ignore_spans.push([match.index, match.index + match[0].length])
-                    const parsed: AnkiConnectNoteAndID = new RegexNote(
+                    let note_obj = new RegexNote(
                         match, note_type, this.data.fields_dict,
                         search_tags, search_id, this.data.curly_cloze, this.data.highlights_to_cloze, this.formatter, this.data.cloze_keyword
-                    ).parse(
+                    )
+                    let context = this.getShouldAddContext(note_type) ? this.getContextAtIndex(match.index) : ""
+                    const parsed: AnkiConnectNoteAndID = note_obj.parse(
                         this.target_deck,
                         this.url,
                         this.frozen_fields_dict,
                         this.data,
-                        this.data.add_context ? this.getContextAtIndex(match.index) : "",
+                        context,
                         this.aliases
                     )
                     if (search_id) {

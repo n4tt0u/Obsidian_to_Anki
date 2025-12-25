@@ -90,7 +90,17 @@ abstract class AbstractNote {
         template["fields"] = this.getFields()
         const file_link_fields = data.file_link_fields
         if (url) {
-            this.formatter.format_note_with_url(template, url, file_link_fields[this.note_type])
+            let shouldAddLink = false;
+            if (data.note_type_granular_control) {
+                const linkField = file_link_fields[this.note_type];
+                shouldAddLink = (linkField !== "" && linkField !== undefined);
+            } else {
+                shouldAddLink = true;
+            }
+
+            if (shouldAddLink) {
+                this.formatter.format_note_with_url(template, url, file_link_fields[this.note_type])
+            }
         }
         if (Object.keys(frozen_fields_dict).length) {
             this.formatter.format_note_with_frozen_fields(template, frozen_fields_dict)
@@ -103,7 +113,15 @@ abstract class AbstractNote {
                 template["fields"][context_field] = context
             }
         }
-        if (data.add_aliases && aliases.length > 0) {
+        let shouldAddAliases = false;
+        if (data.note_type_granular_control) {
+            const aliasField = data.alias_fields[this.note_type];
+            shouldAddAliases = (aliasField !== "" && aliasField !== undefined);
+        } else {
+            shouldAddAliases = data.add_aliases;
+        }
+
+        if (shouldAddAliases && aliases.length > 0) {
             const alias_field = data.alias_fields[this.note_type]
             if (alias_field) {
                 // Use <br> for newline separation as requested
@@ -306,7 +324,17 @@ export class RegexNote {
         template["fields"] = this.getFields()
         const file_link_fields = data.file_link_fields
         if (url) {
-            this.formatter.format_note_with_url(template, url, file_link_fields[this.note_type])
+            let shouldAddLink = false;
+            if (data.note_type_granular_control) {
+                const linkField = file_link_fields[this.note_type];
+                shouldAddLink = (linkField !== "" && linkField !== undefined);
+            } else {
+                shouldAddLink = true;
+            }
+
+            if (shouldAddLink) {
+                this.formatter.format_note_with_url(template, url, file_link_fields[this.note_type])
+            }
         }
         if (Object.keys(frozen_fields_dict).length) {
             this.formatter.format_note_with_frozen_fields(template, frozen_fields_dict)
@@ -319,7 +347,15 @@ export class RegexNote {
                 template["fields"][context_field] = context
             }
         }
-        if (data.add_aliases && aliases.length > 0) {
+        let shouldAddAliases = false;
+        if (data.note_type_granular_control) {
+            const aliasField = data.alias_fields[this.note_type];
+            shouldAddAliases = (aliasField !== "" && aliasField !== undefined);
+        } else {
+            shouldAddAliases = data.add_aliases;
+        }
+
+        if (shouldAddAliases && aliases.length > 0) {
             const alias_field = data.alias_fields[this.note_type]
             if (alias_field) {
                 // Use <br> for newline separation as requested

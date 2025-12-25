@@ -23,6 +23,7 @@ export default class MyPlugin extends Plugin {
 			CUSTOM_REGEXPS: {},
 			FILE_LINK_FIELDS: {},
 			CONTEXT_FIELDS: {},
+			ALIAS_FIELDS: {},
 			FOLDER_DECKS: {},
 			FOLDER_TAGS: {},
 			Syntax: {
@@ -43,6 +44,7 @@ export default class MyPlugin extends Plugin {
 				"Scheduling Interval": 0,
 				"Add File Link": false,
 				"Add Context": false,
+				"Add Aliases": false,
 				"CurlyCloze": false,
 				"CurlyCloze - Highlights to Clozes": false,
 				"ID Comments": true,
@@ -50,7 +52,8 @@ export default class MyPlugin extends Plugin {
 				"CurlyCloze - Keyword": "Cloze",
 				"Smart Scan": true,
 				"Add Obsidian YAML Tags": false,
-				"Bulk Delete IDs": false
+				"Bulk Delete IDs": false,
+				"Note Type Granular Control": false
 			},
 			IGNORED_FILE_GLOBS: DEFAULT_IGNORED_FILE_GLOBS,
 		}
