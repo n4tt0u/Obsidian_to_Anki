@@ -200,7 +200,7 @@ export class SettingsTab extends PluginSettingTab {
 								plugin.settings["Defaults"][key] = value
 								plugin.saveAllData()
 								if (key === "Add File Link" || key === "Add Context" || key === "Add Aliases") {
-									this.display()
+									setTimeout(() => this.display(), 200)
 								}
 							})
 					)
@@ -429,7 +429,7 @@ export class SettingsTab extends PluginSettingTab {
 				.onChange((value) => {
 					plugin.settings.Defaults["Regex Required Tags"] = value
 					plugin.saveAllData()
-					this.display() // Refresh to show/hide column
+					setTimeout(() => this.display(), 200) // Refresh to show/hide column
 				})
 			)
 	}
