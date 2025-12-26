@@ -7,7 +7,7 @@ import { FolderSuggestModal, getAllFolders } from './ui/FolderSuggester'
 const defaultDescs = {
 	"Scan Directory": "The directory to scan. Leave empty to scan the entire vault",
 	"Scan Tags": "The tags to scan. Leave empty to scan all files. Separate multiple tags with commas.",
-	"Tag": "The tag that the plugin automatically adds to any generated cards.",
+	"Tag": "The tag(s) that the plugin automatically adds to any generated cards. Separate multiple tags with commas.",
 	"Deck": "The deck the plugin adds cards to if TARGET DECK is not specified in the file.",
 	"Scheduling Interval": "The time, in minutes, between automatic scans of the vault. Set this to 0 to disable automatic scanning.",
 	"Add File Link": "Append a link to the file that generated the flashcard on the field specified in the table.",
@@ -176,11 +176,16 @@ export class SettingsTab extends PluginSettingTab {
 					.setName(key)
 					.setDesc(defaultDescs[key])
 					.addText(
-						text => text.setValue(plugin.settings["Defaults"][key])
-							.onChange((value) => {
-								plugin.settings["Defaults"][key] = value
-								plugin.saveAllData()
-							})
+						text => {
+							if (key === "Tag") {
+								text.setPlaceholder("tag1, tag2")
+							}
+							text.setValue(plugin.settings["Defaults"][key])
+								.onChange((value) => {
+									plugin.settings["Defaults"][key] = value
+									plugin.saveAllData()
+								})
+						}
 					)
 			} else if (typeof plugin.settings["Defaults"][key] === "boolean") {
 				new Setting(container)
