@@ -666,7 +666,8 @@ export class SettingsTab extends PluginSettingTab {
 		}
 		let folder_tag = new Setting(cells[2])
 			.addText(
-				text => text.setValue(folder_tags[folder.path])
+				text => text.setPlaceholder("tag1, tag2")
+					.setValue(folder_tags[folder.path])
 					.onChange((value) => {
 						plugin.settings.FOLDER_TAGS[folder.path] = value
 						plugin.saveAllData()

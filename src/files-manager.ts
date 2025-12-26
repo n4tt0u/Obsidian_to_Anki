@@ -111,7 +111,7 @@ export class FileManager {
         for (let folder of folder_path_list) {
             // Loops over them from innermost folder
             if (folder_tags[folder.path]) {
-                tags_list.push(...folder_tags[folder.path].split(" "))
+                tags_list.push(...folder_tags[folder.path].split(",").map((tag) => tag.trim()).filter((tag) => tag.length > 0))
             }
         }
         tags_list.push(...this.data.template.tags)
