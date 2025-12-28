@@ -36,7 +36,8 @@ export interface PluginSettings {
 		"Smart Scan": boolean,
 		"Add Obsidian YAML Tags": boolean,
 		"Bulk Delete IDs": boolean,
-		"Regex Required Tags": boolean
+		"Regex Required Tags": boolean,
+		"Add File Link - Link Label": string,
 	},
 	IGNORED_FILE_GLOBS: string[]
 }
@@ -70,6 +71,7 @@ export interface FileData {
 	yaml_tags: boolean
 	regex_required_tags: boolean
 	add_file_link: boolean
+	link_label: string
 }
 
 export interface ParsedSettings extends FileData {

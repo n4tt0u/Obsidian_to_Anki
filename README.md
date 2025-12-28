@@ -62,6 +62,15 @@ You can now configure "Add File Link", "Add Context", and "Add Aliases" per **No
   - For each Note Type, you can select the target field or choose **"None"** to disable the feature for that specific Note Type.
 - **Disable**: Turning the global toggle OFF will hide the column and disable the feature across all Note Types.
 
+### Add File Link Customization
+
+You can customize the text used for the "Add File Link" feature.
+
+- **Link Label**: In the "General" settings (under "Add File Link"), you can specify the text for the link.
+- **Dynamic Filename**: Use `{{title}}` in the text to automatically insert the note's filename (without extension).
+  - Example: `Source: {{title}}` -> `Source: MyNote`
+- **Default**: If left empty, it defaults to "Obsidian".
+
 ### Configurable CurlyCloze Keyword
 
 The keyword used to identify Cloze Note Types for CurlyCloze syntax (`{...}` -> `{{c1::...}}`) is now configurable.

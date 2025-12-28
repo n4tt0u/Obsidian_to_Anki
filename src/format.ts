@@ -57,9 +57,17 @@ export class FormatConverter {
 		return "obsidian://open?vault=" + encodeURIComponent(this.vault_name) + String.raw`&file=` + encodeURIComponent(link)
 	}
 
-	format_note_with_url(note: AnkiConnectNote, url: string, field: string): void {
+	format_note_with_url(note: AnkiConnectNote, url: string, field: string, link_label: string = "Obsidian", filename: string = ""): void {
 		let prefix = note.fields[field] ? '<br>' : '';
-		note.fields[field] += prefix + '<a href="' + url + '" class="obsidian-link">Obsidian</a>'
+		let link_text = link_label;
+		if (filename) {
+			const escaped_filename = escapeHtml(filename);
+			link_text = link_text.replace(/{{title}}/g, escaped_filename);
+		}
+		if (!link_text) {
+			link_text = "Obsidian";
+		}
+		note.fields[field] += prefix + '<a href="' + url + '" class="obsidian-link">' + link_text + '</a>'
 	}
 
 	format_note_with_frozen_fields(note: AnkiConnectNote, frozen_fields_dict: Record<string, Record<string, string>>): void {

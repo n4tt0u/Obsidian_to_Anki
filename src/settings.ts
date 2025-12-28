@@ -11,6 +11,7 @@ const defaultDescs = {
 	"Deck": "The deck the plugin adds cards to if TARGET DECK is not specified in the file.",
 	"Scheduling Interval": "The time, in minutes, between automatic scans of the vault. Set this to 0 to disable automatic scanning.",
 	"Add File Link": "Append a link to the file that generated the flashcard on the field specified in the table.",
+	"Add File Link - Link Label": "Enter the text to display for the link. Use {{title}} to insert the note’s filename.",
 	"Add Context": "Append 'context' for the card, in the form of path > heading > heading etc, to the field specified in the table.",
 	"Add Aliases": "Append aliases from frontmatter to the field specified in the table.",
 	"CurlyCloze": "Convert {cloze deletions} -> {{c1::cloze deletions}} on note types that have a 'Keyword' in their name.",
@@ -167,10 +168,13 @@ export class SettingsTab extends PluginSettingTab {
 		if (!(plugin.settings["Defaults"].hasOwnProperty("Regex Required Tags"))) {
 			plugin.settings["Defaults"]["Regex Required Tags"] = false
 		}
+		if (!(plugin.settings["Defaults"].hasOwnProperty("Add File Link - Link Label"))) {
+			plugin.settings["Defaults"]["Add File Link - Link Label"] = "Obsidian"
+		}
 
 		for (let key of Object.keys(defaultDescs)) {
 			// Skip Scan Directory (already added above) and Regex
-			if (key === "Scan Directory" || key === "Scan Tags" || key === "Regex" || key === "Bulk Delete IDs" || key === "Regex Required Tags" || key === "Smart Scan") {
+			if (key === "Scan Directory" || key === "Scan Tags" || key === "Regex" || key === "Bulk Delete IDs" || key === "Regex Required Tags" || key === "Smart Scan" || key === "Add File Link - Link Label") {
 				continue
 			}
 
@@ -204,6 +208,29 @@ export class SettingsTab extends PluginSettingTab {
 								}
 							})
 					)
+
+				// Add Link Label input if Add File Link is enabled
+				if (key === "Add File Link" && plugin.settings["Defaults"]["Add File Link"]) {
+					new Setting(container)
+						.setName("Add File Link - Link Label")
+						.setDesc(defaultDescs["Add File Link - Link Label"])
+						.addText(text => text
+							.setValue(plugin.settings["Defaults"]["Add File Link - Link Label"])
+							//.setPlaceholder("Obsidian (default)")
+							.onChange((value) => {
+								plugin.settings["Defaults"]["Add File Link - Link Label"] = value
+								plugin.saveAllData()
+							})
+							.inputEl.addEventListener('blur', (e) => {
+								const target = e.target as HTMLInputElement;
+								if (!target.value.trim()) {
+									target.value = "Obsidian";
+									plugin.settings["Defaults"]["Add File Link - Link Label"] = "Obsidian";
+									plugin.saveAllData();
+								}
+							})
+						)
+				}
 			} else {
 				new Setting(container)
 					.setName(key)
