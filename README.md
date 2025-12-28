@@ -1,7 +1,7 @@
 # Obsidian_to_Anki_Kai
 
 This repository is a fork of [Obsidian_to_Anki](https://github.com/Pseudonium/Obsidian_to_Anki).
-It includes additional features and improvements suitable for specific workflows, such as multilingual support and other personal enhancements.
+I added features that I personally wanted.
 
 ## Installation
 
