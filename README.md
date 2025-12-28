@@ -38,19 +38,33 @@ The easiest way to install and keep the plugin updated.
 
 Merged [PR #673](https://github.com/ObsidianToAnki/Obsidian_to_Anki/pull/673) which includes a complete redesign of the plugin with improved UX and new sync features.
 
-**Major improvements:**
+Major improvements:
 
-- **Redesigned Settings UI**: Modern tab-based navigation for easier configuration.
-- **Searchable Tables**: Note Types and Folders are now managed in searchable tables.
-- **Settings Import/Export**: Easily backup and restore your plugin settings.
-- **Folder Picker**: Simplified path selection for scan directories.
-- **Multiple Tags Support**: Enhanced the tag functionality to support scanning for multiple tags.
+- Redesigned settings UI with tab-based navigation
+- Added searchable tables for Note Types and Folders
+- Implemented folder picker for easier path selection
+- Added import/export settings functionality
 
-**New Sync Commands & UX:**
+New sync commands:
 
-- **Sync Current File/Folder**: Context menu commands to sync specific files or folders.
-- **Progress Modal**: Real-time status updates during sync.
-- **Status Bar**: Visual indicator of sync state.
+- Sync Current File: Quick sync for active file
+- Sync Current Folder: Sync all files in current folder
+- Sync Entire Vault: Full vault sync (existing behavior)
+- Context menu integration for files and folders
+
+Enhanced user experience:
+
+- Progress modal with real-time status updates
+- Status bar indicator showing sync state
+- Better error messages and notifications
+- Improved performance with smart file change detection
+
+Technical improvements:
+
+- New UI components: TabContainer, SearchableTable, FolderSuggester, ProgressModal
+- Better code organization with src/ui/ folder
+- Enhanced error handling and user feedback
+- All existing features preserved for backward compatibility
 
 ### Enhanced Field Control
 
