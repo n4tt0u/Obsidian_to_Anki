@@ -174,7 +174,7 @@ export class SettingsTab extends PluginSettingTab {
 
 		for (let key of Object.keys(defaultDescs)) {
 			// Skip Scan Directory (already added above) and Regex
-			if (key === "Scan Directory" || key === "Scan Tags" || key === "Regex" || key === "Bulk Delete IDs" || key === "Regex Required Tags" || key === "Smart Scan" || key === "Add File Link - Link Label") {
+			if (key === "Scan Directory" || key === "Scan Tags" || key === "Regex" || key === "Bulk Delete IDs" || key === "Regex Required Tags" || key === "Smart Scan" || key === "Add File Link - Link Label" || key === "CurlyCloze - Keyword" || key === "CurlyCloze - Highlights to Clozes") {
 				continue
 			}
 
@@ -203,7 +203,7 @@ export class SettingsTab extends PluginSettingTab {
 							.onChange((value) => {
 								plugin.settings["Defaults"][key] = value
 								plugin.saveAllData()
-								if (key === "Add File Link" || key === "Add Context" || key === "Add Aliases") {
+								if (key === "Add File Link" || key === "Add Context" || key === "Add Aliases" || key === "CurlyCloze") {
 									setTimeout(() => this.display(), 200)
 								}
 							})
@@ -228,6 +228,31 @@ export class SettingsTab extends PluginSettingTab {
 									plugin.settings["Defaults"]["Add File Link - Link Label"] = "Obsidian";
 									plugin.saveAllData();
 								}
+							})
+						)
+				}
+
+				// Add CurlyCloze child settings
+				if (key === "CurlyCloze" && plugin.settings["Defaults"]["CurlyCloze"]) {
+					new Setting(container)
+						.setName("CurlyCloze - Keyword")
+						.setDesc(defaultDescs["CurlyCloze - Keyword"])
+						.addText(text => text
+							.setValue(plugin.settings["Defaults"]["CurlyCloze - Keyword"])
+							.onChange((value) => {
+								plugin.settings["Defaults"]["CurlyCloze - Keyword"] = value
+								plugin.saveAllData()
+							})
+						)
+
+					new Setting(container)
+						.setName("CurlyCloze - Highlights to Clozes")
+						.setDesc(defaultDescs["CurlyCloze - Highlights to Clozes"])
+						.addToggle(toggle => toggle
+							.setValue(plugin.settings["Defaults"]["CurlyCloze - Highlights to Clozes"])
+							.onChange((value) => {
+								plugin.settings["Defaults"]["CurlyCloze - Highlights to Clozes"] = value
+								plugin.saveAllData()
 							})
 						)
 				}
