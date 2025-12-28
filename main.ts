@@ -54,7 +54,8 @@ export default class MyPlugin extends Plugin {
 				"Smart Scan": true,
 				"Add Obsidian YAML Tags": false,
 				"Bulk Delete IDs": false,
-				"Regex Required Tags": false
+				"Regex Required Tags": false,
+				"Add File Link - Link Label": "Obsidian"
 			},
 			IGNORED_FILE_GLOBS: DEFAULT_IGNORED_FILE_GLOBS,
 		}
@@ -180,6 +181,33 @@ export default class MyPlugin extends Plugin {
 			for (let note_type of Object.keys(this.settings["REGEXP_TAGS"])) {
 				if (!this.note_types.includes(note_type)) {
 					delete this.settings["REGEXP_TAGS"][note_type]
+				}
+			}
+		}
+
+		// Removing old note types from FILE_LINK_FIELDS
+		if (this.settings.FILE_LINK_FIELDS) {
+			for (let note_type of Object.keys(this.settings.FILE_LINK_FIELDS)) {
+				if (!this.note_types.includes(note_type)) {
+					delete this.settings.FILE_LINK_FIELDS[note_type]
+				}
+			}
+		}
+
+		// Removing old note types from CONTEXT_FIELDS
+		if (this.settings.CONTEXT_FIELDS) {
+			for (let note_type of Object.keys(this.settings.CONTEXT_FIELDS)) {
+				if (!this.note_types.includes(note_type)) {
+					delete this.settings.CONTEXT_FIELDS[note_type]
+				}
+			}
+		}
+
+		// Removing old note types from ALIAS_FIELDS
+		if (this.settings.ALIAS_FIELDS) {
+			for (let note_type of Object.keys(this.settings.ALIAS_FIELDS)) {
+				if (!this.note_types.includes(note_type)) {
+					delete this.settings.ALIAS_FIELDS[note_type]
 				}
 			}
 		}
