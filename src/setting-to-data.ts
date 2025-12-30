@@ -54,5 +54,6 @@ export async function settingToData(app: App, settings: PluginSettings, fields_d
     result.link_label = settings.Defaults["Add File Link - Link Label"];
     result.ignored_file_globs = settings.IGNORED_FILE_GLOBS ?? [];
     result.ignored_file_globs = settings.IGNORED_FILE_GLOBS ?? [];
+    result.saveIDToFrontmatter = settings.Defaults["Save Note ID to Frontmatter"];
     return result
 }

@@ -9,6 +9,21 @@ export async function checkAndBulkDelete(app: App, file: TFile) {
     const matches = [...content.matchAll(regex)];
     const ids = matches.map(m => parseInt(m[1])).filter(id => !isNaN(id));
 
+    // Check for Frontmatter ID
+    let frontmatterID: number | null = null;
+    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
+    const fmMatch = content.match(frontmatterRegex);
+    if (fmMatch) {
+        const frontmatter = fmMatch[1];
+        const nidMatch = frontmatter.match(/^nid:\s*(\d+)/m);
+        if (nidMatch) {
+            frontmatterID = parseInt(nidMatch[1]);
+            if (!isNaN(frontmatterID)) {
+                ids.push(frontmatterID);
+            }
+        }
+    }
+
     if (ids.length === 0) {
         new Notice("No IDs found in this file.");
         return;
@@ -37,6 +52,25 @@ export async function checkAndBulkDelete(app: App, file: TFile) {
         // We use the same regex ID_REGEXP_STR. 
         // Note: The regex includes optional newlines at start.
         newContent = newContent.replace(regex, "");
+
+        // Remove Frontmatter ID property
+        if (frontmatterID) {
+            newContent = newContent.replace(frontmatterRegex, (match, fmContent) => {
+                let newFm = fmContent;
+                const trimmed = newFm.trim();
+
+                if (/nid:[^\n]*$/.test(trimmed)) {
+                    // Last property: Remove entirely
+                    // Removes newline before if exists, and the line itself
+                    newFm = newFm.replace(/(\n\s*)?nid:[^\n]*\s*$/, "");
+                } else {
+                    // Not last property: Clear value
+                    newFm = newFm.replace(/^(nid:).*/m, "$1");
+                }
+
+                return `---\n${newFm}\n---`;
+            });
+        }
 
         // Remove potential Double Newlines created by removal?
         // Logic in file.ts fix_newline_ids handles this usually, but a simple replace is okay.

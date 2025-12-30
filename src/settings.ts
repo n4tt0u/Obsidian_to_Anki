@@ -21,7 +21,8 @@ const defaultDescs = {
 	"Add Obsidian Tags": "Interpret #tags in the fields of a note as Anki tags, removing them from the note text in Anki.",
 	"Add Obsidian YAML Tags": "Send tags defined in YAML frontmatter to Anki.",
 	"Smart Scan": "Skip files that haven't changed since the last scan (based on MD5 hash). Disable to force a full scan.",
-	"Bulk Delete IDs": "Enables 'Delete all IDs in file' menu. Deletes Anki notes for IDs found in the selected file and removes the IDs."
+	"Bulk Delete IDs": "Enables 'Delete all IDs in file' menu. Deletes Anki notes for IDs found in the selected file and removes the IDs.",
+	"Save Note ID to Frontmatter": "Save the Anki Note ID (nid) to the YAML frontmatter instead of an inline comment. Applies ONLY to files that correspond to a single Anki note. Multiple notes in a file will still use inline IDs."
 }
 
 export const DEFAULT_IGNORED_FILE_GLOBS = [
@@ -171,10 +172,13 @@ export class SettingsTab extends PluginSettingTab {
 		if (!(plugin.settings["Defaults"].hasOwnProperty("Add File Link - Link Label"))) {
 			plugin.settings["Defaults"]["Add File Link - Link Label"] = "Obsidian"
 		}
+		if (!(plugin.settings["Defaults"].hasOwnProperty("Save Note ID to Frontmatter"))) {
+			plugin.settings["Defaults"]["Save Note ID to Frontmatter"] = false
+		}
 
 		for (let key of Object.keys(defaultDescs)) {
 			// Skip Scan Directory (already added above) and Regex
-			if (key === "Scan Directory" || key === "Scan Tags" || key === "Regex" || key === "Bulk Delete IDs" || key === "Regex Required Tags" || key === "Smart Scan" || key === "Add File Link - Link Label" || key === "CurlyCloze - Keyword" || key === "CurlyCloze - Highlights to Clozes") {
+			if (key === "Scan Directory" || key === "Scan Tags" || key === "Regex" || key === "Bulk Delete IDs" || key === "Regex Required Tags" || key === "Smart Scan" || key === "Add File Link - Link Label" || key === "CurlyCloze - Keyword" || key === "CurlyCloze - Highlights to Clozes" || key === "Save Note ID to Frontmatter") {
 				continue
 			}
 
@@ -482,6 +486,17 @@ export class SettingsTab extends PluginSettingTab {
 					plugin.settings.Defaults["Regex Required Tags"] = value
 					plugin.saveAllData()
 					setTimeout(() => this.display(), 200) // Refresh to show/hide column
+				})
+			)
+
+		new Setting(container)
+			.setName("Save Note ID to Frontmatter")
+			.setDesc(defaultDescs["Save Note ID to Frontmatter"])
+			.addToggle(toggle => toggle
+				.setValue(plugin.settings.Defaults["Save Note ID to Frontmatter"])
+				.onChange((value) => {
+					plugin.settings.Defaults["Save Note ID to Frontmatter"] = value
+					plugin.saveAllData()
 				})
 			)
 	}

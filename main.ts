@@ -55,7 +55,8 @@ export default class MyPlugin extends Plugin {
 				"Add Obsidian YAML Tags": false,
 				"Bulk Delete IDs": false,
 				"Regex Required Tags": false,
-				"Add File Link - Link Label": "Obsidian"
+				"Add File Link - Link Label": "Obsidian",
+				"Save Note ID to Frontmatter": false
 			},
 			IGNORED_FILE_GLOBS: DEFAULT_IGNORED_FILE_GLOBS,
 		}

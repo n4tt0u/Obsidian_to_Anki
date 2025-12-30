@@ -26,18 +26,11 @@ function id_to_str(identifier: number, inline: boolean = false, comment: boolean
     return result
 }
 
-function string_insert(text: string, position_inserts: Array<[number, string]>): string {
-    /*Insert strings in position_inserts into text, at indices.
-
-    position_inserts will look like:
-    [(0, "hi"), (3, "hello"), (5, "beep")]*/
-    let offset = 0
-    let sorted_inserts: Array<[number, string]> = position_inserts.sort((a, b): number => a[0] - b[0])
-    for (let insertion of sorted_inserts) {
-        let position = insertion[0]
-        let insert_str = insertion[1]
-        text = text.slice(0, position + offset) + insert_str + text.slice(position + offset)
-        offset += insert_str.length
+function apply_edits(text: string, edits: Array<{ start: number, end: number, text: string }>): string {
+    /*Apply edits to text in reverse order to maintain indices.*/
+    let sorted_edits = edits.sort((a, b) => b.start - a.start)
+    for (let edit of sorted_edits) {
+        text = text.slice(0, edit.start) + edit.text + text.slice(edit.end)
     }
     return text
 }
@@ -302,6 +295,11 @@ export class AllFile extends AbstractFile {
     regex_notes_to_add: AnkiConnectNote[]
     regex_id_indexes: number[]
 
+    useFrontmatterID: boolean = false
+    frontmatterID: number | null = null
+    existingIDSpans: [number, number][] = []
+    notesToWriteInline: { position: number, id: number }[] = [] // For fallback: had valid ID (YAML) but needs inline
+
     constructor(file_contents: string, path: string, url: string, data: FileData, file_cache: CachedMetadata) {
         super(file_contents, path, url, data, file_cache)
         this.custom_regexps = data.custom_regexps
@@ -332,6 +330,27 @@ export class AllFile extends AbstractFile {
         this.setup_global_tags()
         this.setup_aliases()
         this.add_spans_to_ignore()
+        this.existingIDSpans = []
+        this.notesToWriteInline = []
+
+        // Determine if we should use Frontmatter ID
+        const noteMatches = Array.from(this.file.matchAll(this.data.NOTE_REGEXP)).length
+        const inlineMatches = Array.from(this.file.matchAll(this.data.INLINE_REGEXP)).length
+        let regexMatches = 0
+        for (let note_type in this.custom_regexps) {
+            if (this.custom_regexps[note_type]) {
+                const regexp_str = this.custom_regexps[note_type]
+            }
+        }
+
+        // Simplified approach: Check settings first
+        if (this.data.saveIDToFrontmatter) {
+            // We can obtain the ID from frontmatter if available
+            if (this.file_cache.frontmatter && this.file_cache.frontmatter.nid) {
+                this.frontmatterID = parseInt(this.file_cache.frontmatter.nid);
+            }
+        }
+
         this.notes_to_add = []
         this.inline_notes_to_add = []
         this.regex_notes_to_add = []
@@ -369,18 +388,36 @@ export class AllFile extends AbstractFile {
                 parsed.note.tags.push(...this.global_tags.split(TAG_SEP))
                 this.notes_to_add.push(parsed.note)
                 this.id_indexes.push(position)
-            } else if (!this.data.EXISTING_IDS.includes(parsed.identifier)) {
-                if (parsed.identifier == CLOZE_ERROR) {
-                    continue
-                }
-                // Need to show an error otherwise
-                else if (parsed.identifier == NOTE_TYPE_ERROR) {
-                    console.warn("Did not recognise note type ", parsed.note.modelName, " in file ", this.path)
-                } else {
-                    console.warn("Note with id", parsed.identifier, " in file ", this.path, " does not exist in Anki!")
-                }
             } else {
-                this.notes_to_edit.push(parsed)
+                // Determine ID span
+                // Note: The Note class logic extracts ID from the last line(s).
+                // We re-detect it here to find the span in the file.
+                // It is expected to be at the end of 'note' string.
+                const idMatch = note.match(new RegExp(ID_REGEXP_STR + "$")); // Anchor to end?
+                // ID_REGEXP_STR is `\n?(?:<!--)?(?:ID: (\d+).*)`
+                if (idMatch) {
+                    const matchIndex = note.lastIndexOf(idMatch[0]);
+                    if (matchIndex !== -1) {
+                        this.existingIDSpans.push([
+                            note_match.index + matchIndex,
+                            note_match.index + matchIndex + idMatch[0].length
+                        ]);
+                    }
+                }
+
+                if (!this.data.EXISTING_IDS.includes(parsed.identifier)) {
+                    if (parsed.identifier == CLOZE_ERROR) {
+                        continue
+                    }
+                    // Need to show an error otherwise
+                    else if (parsed.identifier == NOTE_TYPE_ERROR) {
+                        console.warn("Did not recognise note type ", parsed.note.modelName, " in file ", this.path)
+                    } else {
+                        console.warn("Note with id", parsed.identifier, " in file ", this.path, " does not exist in Anki!")
+                    }
+                } else {
+                    this.notes_to_edit.push(parsed)
+                }
             }
         }
     }
@@ -412,14 +449,27 @@ export class AllFile extends AbstractFile {
                 parsed.note.tags.push(...this.global_tags.split(TAG_SEP))
                 this.inline_notes_to_add.push(parsed.note)
                 this.inline_id_indexes.push(position)
-            } else if (!this.data.EXISTING_IDS.includes(parsed.identifier)) {
-                // Need to show an error
-                if (parsed.identifier == CLOZE_ERROR) {
-                    continue
-                }
-                console.warn("Note with id", parsed.identifier, " in file ", this.path, " does not exist in Anki!")
             } else {
-                this.notes_to_edit.push(parsed)
+                // Capture ID span for inline notes
+                // InlineNote.ID_REGEXP is `(?:<!--)?ID: (\d+)`
+                const idMatch = note.match(InlineNote.ID_REGEXP)
+                if (idMatch) {
+                    // Start of note + index of match
+                    this.existingIDSpans.push([
+                        note_match.index + idMatch.index,
+                        note_match.index + idMatch.index + idMatch[0].length
+                    ])
+                }
+
+                if (!this.data.EXISTING_IDS.includes(parsed.identifier)) {
+                    // Need to show an error
+                    if (parsed.identifier == CLOZE_ERROR) {
+                        continue
+                    }
+                    console.warn("Note with id", parsed.identifier, " in file ", this.path, " does not exist in Anki!")
+                } else {
+                    this.notes_to_edit.push(parsed)
+                }
             }
         }
     }
@@ -469,6 +519,24 @@ export class AllFile extends AbstractFile {
                         parsed.note.tags.push(...this.global_tags.split(TAG_SEP))
                         this.regex_notes_to_add.push(parsed.note)
                         this.regex_id_indexes.push(match.index + match[0].length)
+                    }
+                    // For Regex Notes, if we found an ID, it is part of the match?
+                    // RegexNote constructor takes `match`. `pop()` is used if `search_id` is true.
+                    // The match array contains full match at [0].
+                    // If search_id is true, the regex included ID_REGEXP_STR at the end.
+                    if (search_id && parsed.identifier) {
+                        // The ID part is at the end of the match.
+                        const matchStr = match[0]
+                        const idMatch = matchStr.match(new RegExp(ID_REGEXP_STR + "$"));
+                        if (idMatch) {
+                            const matchIndex = matchStr.lastIndexOf(idMatch[0]);
+                            if (matchIndex !== -1) {
+                                this.existingIDSpans.push([
+                                    match.index + matchIndex,
+                                    match.index + matchIndex + idMatch[0].length
+                                ]);
+                            }
+                        }
                     }
                 }
             }
@@ -540,6 +608,88 @@ export class AllFile extends AbstractFile {
         }
         this.all_notes_to_add = this.notes_to_add.concat(this.inline_notes_to_add).concat(this.regex_notes_to_add)
         this.scanDeletions()
+        this.postProcessFrontmatterID()
+    }
+
+    postProcessFrontmatterID() {
+        const totalNotes = this.notes_to_add.length + this.inline_notes_to_add.length + this.regex_notes_to_add.length + this.notes_to_edit.length;
+
+        // If strictly one note AND settings enabled, use Frontmatter ID
+        if (this.data.saveIDToFrontmatter && totalNotes === 1) {
+            this.useFrontmatterID = true;
+
+            if (this.frontmatterID) {
+                // Case 1: Frontmatter ID exists.
+                // Check where the single note is.
+                if (this.notes_to_add.length === 1) {
+                    // Note was considered "new" (no inline ID).
+                    // If Frontmatter ID is valid in Anki, move to notes_to_edit.
+                    if (this.data.EXISTING_IDS.includes(this.frontmatterID)) {
+                        const note = this.notes_to_add.pop();
+                        // Remove its write-index logic?
+                        this.id_indexes.pop();
+
+                        this.notes_to_edit.push({ note: note, identifier: this.frontmatterID });
+                    }
+                    // If not valid, it stays in notes_to_add, but writeIDs will write to frontmatter because useFrontmatterID=true.
+                } else if (this.inline_notes_to_add.length === 1 || this.regex_notes_to_add.length === 1) {
+                    // Same logic for other types (unlikely for "Main" note but possible)
+                    if (this.inline_notes_to_add.length) {
+                        if (this.data.EXISTING_IDS.includes(this.frontmatterID)) {
+                            const note = this.inline_notes_to_add.pop();
+                            this.inline_id_indexes.pop();
+                            this.notes_to_edit.push({ note: note, identifier: this.frontmatterID });
+                        }
+                    } else {
+                        if (this.data.EXISTING_IDS.includes(this.frontmatterID)) {
+                            const note = this.regex_notes_to_add.pop();
+                            this.regex_id_indexes.pop();
+                            this.notes_to_edit.push({ note: note, identifier: this.frontmatterID });
+                        }
+                    }
+                } else if (this.notes_to_edit.length === 1) {
+                    // Note had an inline ID.
+                    // Prefer Frontmatter ID over Inline ID?
+                    // We should use Frontmatter ID.
+                    const parsed = this.notes_to_edit[0];
+                    if (parsed.identifier !== this.frontmatterID) {
+                        // IDs differ. 
+                        // If Frontmatter ID is valid, we assume that's the correct one.
+                        // But maybe inconsistent state?
+                        // Let's adopt Frontmatter ID.
+                        if (this.data.EXISTING_IDS.includes(this.frontmatterID)) {
+                            parsed.identifier = this.frontmatterID;
+                        }
+                    }
+                    // Since useFrontmatterID is true, writeIDs will remove the inline ID (via existingIDSpans) and ensure ID is in Frontmatter.
+                }
+            } else {
+                // Case 2: No Frontmatter ID.
+                // If note has inline ID (notes_to_edit), we keep it, but writeIDs will move it to frontmatter.
+                // If note has no ID (notes_to_add), logic works as is -> writeIDs will write new ID to frontmatter.
+            }
+        } else {
+            this.useFrontmatterID = false;
+
+            // Critical Fallback: If we had a Frontmatter ID (nid) but now have multiple notes (or setting OFF).
+            if (this.frontmatterID && this.data.EXISTING_IDS.includes(this.frontmatterID)) {
+                // We need to restore this ID to the "Main" note as an inline ID.
+                // The "Main" note should be in notes_to_add (because it had no inline ID).
+                if (this.notes_to_add.length > 0) {
+                    // We assume the first note in notes_to_add is the one that owns the Frontmatter ID.
+                    // (Heuristic: Standard notes are usually the main content).
+                    const note = this.notes_to_add.shift(); // Remove from add
+                    const position = this.id_indexes.shift(); // Remove position
+
+                    if (note && position !== undefined) {
+                        // Move to edit
+                        this.notes_to_edit.push({ note: note, identifier: this.frontmatterID });
+                        // Schedule inline write
+                        this.notesToWriteInline.push({ position: position, id: this.frontmatterID });
+                    }
+                }
+            }
+        }
     }
 
     fix_newline_ids() {
@@ -547,34 +697,108 @@ export class AllFile extends AbstractFile {
     }
 
     writeIDs() {
-        let normal_inserts: [number, string][] = []
-        this.id_indexes.forEach(
-            (id_position: number, index: number) => {
-                const identifier: number | null = this.note_ids[index]
-                if (identifier) {
-                    normal_inserts.push([id_position, id_to_str(identifier, false, this.data.comment)])
+        let edits: { start: number, end: number, text: string }[] = []
+
+        // Helper to determine target ID for Frontmatter
+        const getTargetID = (): number | null => {
+            if (this.notes_to_edit.length > 0) return this.notes_to_edit[0].identifier;
+            if (this.note_ids.length > 0) return this.note_ids[0];
+            // If fallback inline write logic puts note in note_ids, it works.
+            return null;
+        }
+
+        if (this.useFrontmatterID) {
+            // 1. Remove Existing Inline IDs
+            for (let span of this.existingIDSpans) {
+                edits.push({ start: span[0], end: span[1], text: "" });
+            }
+
+            // 2. Write/Update Frontmatter ID
+            const targetID = getTargetID();
+            if (targetID) {
+                const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
+                const match = this.file.match(frontmatterRegex);
+                if (match) {
+                    let frontmatter = match[1];
+                    let newFrontmatter = frontmatter;
+                    // Match key "nid:" followed by anything (or nothing) until newline
+                    const nidRegex = /^nid:.*$/m;
+                    if (nidRegex.test(frontmatter)) {
+                        newFrontmatter = frontmatter.replace(nidRegex, `nid: ${targetID}`);
+                    } else {
+                        newFrontmatter = frontmatter + `\nnid: ${targetID}`;
+                    }
+                    edits.push({ start: 0, end: match[0].length, text: `---\n${newFrontmatter.trim()}\n---` });
+                } else {
+                    // No frontmatter, create it
+                    edits.push({ start: 0, end: 0, text: `---\nnid: ${targetID}\n---\n` });
                 }
             }
-        )
-        let inline_inserts: [number, string][] = []
-        this.inline_id_indexes.forEach(
-            (id_position: number, index: number) => {
-                const identifier: number | null = this.note_ids[index + this.notes_to_add.length] //Since regular then inline
-                if (identifier) {
-                    inline_inserts.push([id_position, id_to_str(identifier, true, this.data.comment)])
+        } else {
+            // Fallback: Remove nid from Frontmatter if exists
+            if (this.frontmatterID) {
+                const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
+                const match = this.file.match(frontmatterRegex);
+                if (match) {
+                    let frontmatter = match[1];
+                    const nidRegex = /^nid:.*\n?/m;
+                    if (nidRegex.test(frontmatter)) {
+                        let newFrontmatter = frontmatter;
+                        if (/nid:[^\n]*$/.test(frontmatter.trim())) {
+                            // Last property: Remove entirely
+                            // Removes newline before if exists, and the line itself
+                            newFrontmatter = frontmatter.replace(/(\n\s*)?nid:[^\n]*\s*$/, "");
+                        } else {
+                            // Not last: Clear value
+                            // Use regex that excludes newline to prevent merging with next line
+                            newFrontmatter = frontmatter.replace(/^nid:[^\n]*/m, "nid:");
+                        }
+
+                        // Assuming we keep the frontmatter even if empty?
+                        edits.push({ start: 0, end: match[0].length, text: `---\n${newFrontmatter}\n---` });
+                    }
                 }
             }
-        )
-        let regex_inserts: [number, string][] = []
-        this.regex_id_indexes.forEach(
-            (id_position: number, index: number) => {
-                const identifier: number | null = this.note_ids[index + this.notes_to_add.length + this.inline_notes_to_add.length] // Since regular then inline then regex
-                if (identifier) {
-                    regex_inserts.push([id_position, "\n" + id_to_str(identifier, false, this.data.comment).trim()])
+
+            // Fallback Inline Writes (Restoring YAML ID to Inline)
+            this.notesToWriteInline.forEach(item => {
+                edits.push({ start: item.position, end: item.position, text: id_to_str(item.id, false, this.data.comment) });
+            });
+
+            // Standard Inline Writes
+            this.id_indexes.forEach(
+                (id_position: number, index: number) => {
+                    const identifier: number | null = this.note_ids[index]
+                    if (identifier) {
+                        edits.push({ start: id_position, end: id_position, text: id_to_str(identifier, false, this.data.comment) })
+                    }
                 }
-            }
-        )
-        this.file = string_insert(this.file, normal_inserts.concat(inline_inserts).concat(regex_inserts))
-        this.fix_newline_ids()
+            )
+            this.inline_id_indexes.forEach(
+                (id_position: number, index: number) => {
+                    const identifier: number | null = this.note_ids[index + this.notes_to_add.length] //Since regular then inline
+                    if (identifier) {
+                        edits.push({ start: id_position, end: id_position, text: id_to_str(identifier, true, this.data.comment) })
+                    }
+                }
+            )
+            this.regex_id_indexes.forEach(
+                (id_position: number, index: number) => {
+                    const identifier: number | null = this.note_ids[index + this.notes_to_add.length + this.inline_notes_to_add.length] // Since regular then inline then regex
+                    if (identifier) {
+                        edits.push({ start: id_position, end: id_position, text: "\n" + id_to_str(identifier, false, this.data.comment).trim() })
+                    }
+                }
+            )
+        }
+
+        this.file = apply_edits(this.file, edits)
+
+        // fix_newline_ids might be needed if inline writes created duplicates or bad spacing regarding existing newlines?
+        // But with apply_edits and clean replacement, it should be fine.
+        // Keeping it just in case for legacy inline stuff.
+        if (!this.useFrontmatterID) {
+            this.fix_newline_ids()
+        }
     }
 }

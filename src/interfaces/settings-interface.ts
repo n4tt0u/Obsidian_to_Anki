@@ -38,6 +38,7 @@ export interface PluginSettings {
 		"Bulk Delete IDs": boolean,
 		"Regex Required Tags": boolean,
 		"Add File Link - Link Label": string,
+		"Save Note ID to Frontmatter": boolean
 	},
 	IGNORED_FILE_GLOBS: string[]
 }
@@ -72,6 +73,7 @@ export interface FileData {
 	regex_required_tags: boolean
 	add_file_link: boolean
 	link_label: string
+	saveIDToFrontmatter: boolean
 }
 
 export interface ParsedSettings extends FileData {

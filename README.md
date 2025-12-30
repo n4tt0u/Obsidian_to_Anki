@@ -145,6 +145,12 @@ This is useful when you want to apply different Note Types (e.g., "Basic" vs "Ba
   - If a file matches the tag, the strict rule applies.
   - If not, the plugin falls back to the generic rule (empty tags).
 
+### Save Note ID to Frontmatter (Experimental)
+
+Allows saving the Anki Note ID (`nid`) in the Obsidian Frontmatter (YAML Properties) instead of as an inline comment or block ID.
+
+- **Enable**: Go to Settings -> Advanced and toggle "**Save Note ID to Frontmatter**" in the "Experimental Features" section.
+
 ### Bulk Delete IDs (Experimental)
 
 A feature to bulk delete Anki cards associated with a specific file.
