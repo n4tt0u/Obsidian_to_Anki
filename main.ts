@@ -7,6 +7,7 @@ import { settingToData } from './src/setting-to-data'
 import { FileManager } from './src/files-manager'
 import { ProgressModal } from './src/ui/ProgressModal'
 import { checkAndBulkDelete } from './src/bulk-delete'
+import { clozeRenderer } from './src/renderer'
 
 export default class MyPlugin extends Plugin {
 
@@ -56,7 +57,9 @@ export default class MyPlugin extends Plugin {
 				"Bulk Delete IDs": false,
 				"Regex Required Tags": false,
 				"Add File Link - Link Label": "Obsidian",
-				"Save Note ID to Frontmatter": false
+				"Save Note ID to Frontmatter": false,
+				"Render Clozes in Reading View": false,
+				"Render Clozes - Highlight": false
 			},
 			IGNORED_FILE_GLOBS: DEFAULT_IGNORED_FILE_GLOBS,
 		}
@@ -484,7 +487,6 @@ export default class MyPlugin extends Plugin {
 	async onload() {
 		console.log('loading Obsidian_to_Anki...');
 		addIcon('anki', ANKI_ICON)
-
 		try {
 			this.settings = await this.loadSettings()
 		}
@@ -492,6 +494,10 @@ export default class MyPlugin extends Plugin {
 			new Notice("Couldn't connect to Anki! Check console for error message.")
 			return
 		}
+
+		this.registerMarkdownPostProcessor((el, ctx) => {
+			clozeRenderer(el, ctx, this.settings.Defaults["Render Clozes in Reading View"], this.settings.Defaults["Render Clozes - Highlight"])
+		})
 
 		this.note_types = Object.keys(this.settings["CUSTOM_REGEXPS"]).sort()
 		this.fields_dict = await this.loadFieldsDict()

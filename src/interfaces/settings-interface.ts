@@ -38,7 +38,9 @@ export interface PluginSettings {
 		"Bulk Delete IDs": boolean,
 		"Regex Required Tags": boolean,
 		"Add File Link - Link Label": string,
-		"Save Note ID to Frontmatter": boolean
+		"Save Note ID to Frontmatter": boolean,
+		"Render Clozes in Reading View": boolean,
+		"Render Clozes - Highlight": boolean
 	},
 	IGNORED_FILE_GLOBS: string[]
 }

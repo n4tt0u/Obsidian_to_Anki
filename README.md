@@ -164,5 +164,14 @@ A feature to bulk delete Anki cards associated with a specific file.
     3. **Note**: The content of the notes in Obsidian will be preserved.
 - **Warning**: This action is destructive to Anki data. A confirmation dialog will be shown before execution.
 
+### Reading View Cloze Renderer
+
+Enhances the display of Anki clozes (`{{c1::answer::hint}}`) in Obsidian's Reading View.
+
+- **Enable**: Go to Settings -> Advanced -> Experimental Features and toggle "**Render Clozes in Reading View**".
+- **Functionality**:
+  - **Render**: Displays `{{c1::answer::hint}}` as `answer`.
+  - **Highlight**: If enabled, the answer text is highlighted using Obsidian's default highlight style (`<mark>`). This setting appears as "**Highlight Rendered Clozes**" when the main toggle is ON.
+
 ---
 For basic usage and configurations, please refer to the [Original Wiki](https://github.com/Pseudonium/Obsidian_to_Anki/wiki).

@@ -22,7 +22,9 @@ const defaultDescs = {
 	"Add Obsidian YAML Tags": "Send tags defined in YAML frontmatter to Anki.",
 	"Smart Scan": "Skip files that haven't changed since the last scan (based on MD5 hash). Disable to force a full scan.",
 	"Bulk Delete IDs": "Enables 'Delete all IDs in file' menu. Deletes Anki notes for IDs found in the selected file and removes the IDs.",
-	"Save Note ID to Frontmatter": "Save the Anki Note ID (nid) to the YAML frontmatter instead of an inline comment. Applies ONLY to files that correspond to a single Anki note. Multiple notes in a file will still use inline IDs."
+	"Save Note ID to Frontmatter": "Save the Anki Note ID (nid) to the YAML frontmatter instead of an inline comment. Applies ONLY to files that correspond to a single Anki note. Multiple notes in a file will still use inline IDs.",
+	"Render Clozes in Reading View": "Render {{c1::cloze::hint}} as flattened text in Reading View.",
+	"Render Clozes - Highlight": "Apply highlight style to the rendered text."
 }
 
 export const DEFAULT_IGNORED_FILE_GLOBS = [
@@ -175,10 +177,16 @@ export class SettingsTab extends PluginSettingTab {
 		if (!(plugin.settings["Defaults"].hasOwnProperty("Save Note ID to Frontmatter"))) {
 			plugin.settings["Defaults"]["Save Note ID to Frontmatter"] = false
 		}
+		if (!(plugin.settings["Defaults"].hasOwnProperty("Render Clozes in Reading View"))) {
+			plugin.settings["Defaults"]["Render Clozes in Reading View"] = false
+		}
+		if (!(plugin.settings["Defaults"].hasOwnProperty("Render Clozes - Highlight"))) {
+			plugin.settings["Defaults"]["Render Clozes - Highlight"] = false
+		}
 
 		for (let key of Object.keys(defaultDescs)) {
 			// Skip Scan Directory (already added above) and Regex
-			if (key === "Scan Directory" || key === "Scan Tags" || key === "Regex" || key === "Bulk Delete IDs" || key === "Regex Required Tags" || key === "Smart Scan" || key === "Add File Link - Link Label" || key === "CurlyCloze - Keyword" || key === "CurlyCloze - Highlights to Clozes" || key === "Save Note ID to Frontmatter") {
+			if (key === "Scan Directory" || key === "Scan Tags" || key === "Regex" || key === "Bulk Delete IDs" || key === "Regex Required Tags" || key === "Smart Scan" || key === "Add File Link - Link Label" || key === "CurlyCloze - Keyword" || key === "CurlyCloze - Highlights to Clozes" || key === "Save Note ID to Frontmatter" || key === "Render Clozes in Reading View" || key === "Render Clozes - Highlight") {
 				continue
 			}
 
@@ -499,6 +507,36 @@ export class SettingsTab extends PluginSettingTab {
 					plugin.saveAllData()
 				})
 			)
+
+		new Setting(container)
+			.setName("Render Clozes in Reading View")
+			.setDesc("Render {{c1::cloze::hint}} as flattened text in Reading View.")
+			.addToggle(toggle => toggle
+				.setValue(plugin.settings.Defaults["Render Clozes in Reading View"])
+				.onChange((value) => {
+					plugin.settings.Defaults["Render Clozes in Reading View"] = value
+					plugin.saveAllData()
+					// Reload to apply renderer changes immediately is not trivial for post processors, 
+					// likely requires page refresh or file reopen.
+					new Notice("Please reload the current file/tab to apply changes.")
+					// Refresh UI to show/hide child setting
+					this.display()
+				})
+			)
+
+		if (plugin.settings.Defaults["Render Clozes in Reading View"]) {
+			new Setting(container)
+				.setName("Highlight Rendered Clozes")
+				.setDesc("Apply highlight style to the rendered text.")
+				.addToggle(toggle => toggle
+					.setValue(plugin.settings.Defaults["Render Clozes - Highlight"])
+					.onChange((value) => {
+						plugin.settings.Defaults["Render Clozes - Highlight"] = value
+						plugin.saveAllData()
+						new Notice("Please reload the current file/tab to apply changes.")
+					})
+				)
+		}
 	}
 
 	private setup_ignore_files(container: HTMLElement, plugin: any) {
