@@ -40,7 +40,8 @@ export interface PluginSettings {
 		"Add File Link - Link Label": string,
 		"Save Note ID to Frontmatter": boolean,
 		"Render Clozes in Reading View": boolean,
-		"Render Clozes - Highlight": boolean
+		"Render Clozes - Highlight": boolean,
+		"Cloze Deletion Context Menu": boolean
 	},
 	IGNORED_FILE_GLOBS: string[]
 }

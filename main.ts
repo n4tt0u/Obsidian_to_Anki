@@ -1,4 +1,4 @@
-import { Notice, Plugin, addIcon, TFile, TFolder, Menu, TAbstractFile } from 'obsidian'
+import { Notice, Plugin, addIcon, TFile, TFolder, Menu, TAbstractFile, Editor, MarkdownView } from 'obsidian'
 import * as AnkiConnect from './src/anki'
 import { PluginSettings, ParsedSettings } from './src/interfaces/settings-interface'
 import { DEFAULT_IGNORED_FILE_GLOBS, SettingsTab } from './src/settings'
@@ -59,7 +59,8 @@ export default class MyPlugin extends Plugin {
 				"Add File Link - Link Label": "Obsidian",
 				"Save Note ID to Frontmatter": false,
 				"Render Clozes in Reading View": false,
-				"Render Clozes - Highlight": false
+				"Render Clozes - Highlight": false,
+				"Cloze Deletion Context Menu": false
 			},
 			IGNORED_FILE_GLOBS: DEFAULT_IGNORED_FILE_GLOBS,
 		}
@@ -587,6 +588,42 @@ export default class MyPlugin extends Plugin {
 				}
 			})
 		)
+
+		this.registerEvent(
+			this.app.workspace.on('editor-menu', (menu: Menu, editor: Editor, view: MarkdownView) => {
+				if (this.settings.Defaults["Cloze Deletion Context Menu"]) {
+					const selection = editor.getSelection();
+					if (selection) {
+						menu.addItem((item) => {
+							item
+								.setTitle('Anki Cloze')
+								.setIcon('anki')
+								.onClick(() => {
+									this.applyCloze(editor, selection);
+								});
+						});
+					}
+				}
+			})
+		);
+	}
+
+	private applyCloze(editor: Editor, selection: string) {
+		const fileContent = editor.getValue();
+		const regex = /{{c(\d+)::/g;
+		const matches = fileContent.matchAll(regex);
+		const existingNumbers = new Set<number>();
+		for (const match of matches) {
+			existingNumbers.add(parseInt(match[1], 10));
+		}
+
+		let nextNumber = 1;
+		while (existingNumbers.has(nextNumber)) {
+			nextNumber++;
+		}
+
+		const replacement = `{{c${nextNumber}::${selection}}}`;
+		editor.replaceSelection(replacement);
 	}
 
 	async onunload() {

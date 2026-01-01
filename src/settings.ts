@@ -183,10 +183,13 @@ export class SettingsTab extends PluginSettingTab {
 		if (!(plugin.settings["Defaults"].hasOwnProperty("Render Clozes - Highlight"))) {
 			plugin.settings["Defaults"]["Render Clozes - Highlight"] = false
 		}
+		if (!(plugin.settings["Defaults"].hasOwnProperty("Cloze Deletion Context Menu"))) {
+			plugin.settings["Defaults"]["Cloze Deletion Context Menu"] = false
+		}
 
 		for (let key of Object.keys(defaultDescs)) {
 			// Skip Scan Directory (already added above) and Regex
-			if (key === "Scan Directory" || key === "Scan Tags" || key === "Regex" || key === "Bulk Delete IDs" || key === "Regex Required Tags" || key === "Smart Scan" || key === "Add File Link - Link Label" || key === "CurlyCloze - Keyword" || key === "CurlyCloze - Highlights to Clozes" || key === "Save Note ID to Frontmatter" || key === "Render Clozes in Reading View" || key === "Render Clozes - Highlight") {
+			if (key === "Scan Directory" || key === "Scan Tags" || key === "Regex" || key === "Bulk Delete IDs" || key === "Regex Required Tags" || key === "Smart Scan" || key === "Add File Link - Link Label" || key === "CurlyCloze - Keyword" || key === "CurlyCloze - Highlights to Clozes" || key === "Save Note ID to Frontmatter" || key === "Render Clozes in Reading View" || key === "Render Clozes - Highlight" || key === "Cloze Deletion Context Menu") {
 				continue
 			}
 
@@ -537,6 +540,18 @@ export class SettingsTab extends PluginSettingTab {
 					})
 				)
 		}
+
+		new Setting(container)
+			.setName("Cloze Deletion Context Menu")
+			.setDesc("Show 'Anki Cloze' in the right-click menu to convert selected text to {{c<N>::text}}.")
+			.addToggle(toggle => toggle
+				.setValue(plugin.settings.Defaults["Cloze Deletion Context Menu"])
+				.onChange((value) => {
+					plugin.settings.Defaults["Cloze Deletion Context Menu"] = value
+					plugin.saveAllData()
+					new Notice("Please reload Obsidian to apply changes.")
+				})
+			)
 	}
 
 	private setup_ignore_files(container: HTMLElement, plugin: any) {
