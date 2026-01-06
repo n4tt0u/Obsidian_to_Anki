@@ -592,16 +592,27 @@ export default class MyPlugin extends Plugin {
 		this.registerEvent(
 			this.app.workspace.on('editor-menu', (menu: Menu, editor: Editor, view: MarkdownView) => {
 				if (this.settings.Defaults["Cloze Deletion Context Menu"]) {
-					const selection = editor.getSelection();
-					if (selection) {
+					if (this.checkClozeContext(editor)) {
 						menu.addItem((item) => {
 							item
-								.setTitle('Anki Cloze')
+								.setTitle('Remove Anki Cloze')
 								.setIcon('anki')
 								.onClick(() => {
-									this.applyCloze(editor, selection);
+									this.removeCloze(editor);
 								});
 						});
+					} else {
+						const selection = editor.getSelection();
+						if (selection) {
+							menu.addItem((item) => {
+								item
+									.setTitle('Anki Cloze')
+									.setIcon('anki')
+									.onClick(() => {
+										this.applyCloze(editor, selection);
+									});
+							});
+						}
 					}
 				}
 			})
@@ -631,6 +642,62 @@ export default class MyPlugin extends Plugin {
 
 		const replacement = `{{c${nextNumber}::${selection}}}`;
 		editor.replaceSelection(replacement);
+	}
+
+	private checkClozeContext(editor: Editor): boolean {
+		return this.findOverlappingClozes(editor).length > 0;
+	}
+
+	private findOverlappingClozes(editor: Editor): { line: number, from: number, to: number, content: string }[] {
+		const from = editor.getCursor("from");
+		const to = editor.getCursor("to");
+		const results = [];
+
+		for (let i = from.line; i <= to.line; i++) {
+			const lineText = editor.getLine(i);
+			const regex = /{{c\d+::((?:(?!}}).)*)}}/g;
+			let match;
+			while ((match = regex.exec(lineText)) !== null) {
+				const start = match.index;
+				const end = start + match[0].length;
+
+				let selStart = (i === from.line) ? from.ch : 0;
+				let selEnd = (i === to.line) ? to.ch : lineText.length;
+
+				let isOverlap = false;
+				if (selStart === selEnd) {
+					// Point cursor (inclusive check)
+					if (selStart >= start && selStart <= end) isOverlap = true;
+				} else {
+					// Range selection (overlap check)
+					if (selStart < end && selEnd > start) isOverlap = true;
+				}
+
+				if (isOverlap) {
+					results.push({
+						line: i,
+						from: start,
+						to: end,
+						content: match[1]
+					});
+				}
+			}
+		}
+		return results;
+	}
+
+	private removeCloze(editor: Editor) {
+		const clozes = this.findOverlappingClozes(editor);
+		// Sort by line descending, then from descending to ensure replacements don't shift indices
+		clozes.sort((a, b) => {
+			if (a.line !== b.line) return b.line - a.line;
+			return b.from - a.from;
+		});
+
+		for (const cloze of clozes) {
+			const content = cloze.content.split('::')[0];
+			editor.replaceRange(content, { line: cloze.line, ch: cloze.from }, { line: cloze.line, ch: cloze.to });
+		}
 	}
 
 	async onunload() {
