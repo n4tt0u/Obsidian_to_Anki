@@ -268,19 +268,48 @@ abstract class AbstractFile {
     }
 
     getClearTags(): AnkiConnect.AnkiConnectRequest {
-        let IDs: number[] = []
+        let actions: AnkiConnect.AnkiConnectRequest[] = []
         for (let parsed of this.notes_to_edit) {
-            IDs.push(parsed.identifier)
+            // Calculate tags to remove: current_tags - (new_tags + global_tags)
+            // But parsed.note.tags already includes global_tags (see Note.parse)
+            if (parsed.current_tags && parsed.current_tags.length) {
+                const desiredTags = new Set(parsed.note.tags)
+                const tagsToRemove = parsed.current_tags.filter(tag => !desiredTags.has(tag))
+
+                if (tagsToRemove.length > 0) {
+                    actions.push(AnkiConnect.removeTags([parsed.identifier], tagsToRemove.join(" ")))
+                }
+            } else {
+                // Fallback if current_tags unknown (should not happen with new logic, but safe fallback?)
+                // If we don't know current tags, we can't safely remove only specific ones without risking leaving garbage.
+                // But sticking to old behavior (remove all 'possible' tags) is bad.
+                // If current_tags is missing, it implies notesInfo failed or logic error.
+                // We will skip removal to be safe, or we could blindly remove "tags that might be there"?
+                // Let's assume current_tags is populated. If not, we do nothing for removal.
+            }
         }
-        return AnkiConnect.removeTags(IDs, this.tags.join(" "))
+        return AnkiConnect.multi(actions)
     }
 
     getAddTags(): AnkiConnect.AnkiConnectRequest {
         let actions: AnkiConnect.AnkiConnectRequest[] = []
         for (let parsed of this.notes_to_edit) {
-            actions.push(
-                AnkiConnect.addTags([parsed.identifier], parsed.note.tags.join(" ") + " " + this.global_tags)
-            )
+            // Calculate tags to add: desired_tags - current_tags
+            const desiredTags = new Set(parsed.note.tags)
+            let tagsToAdd: string[] = []
+
+            if (parsed.current_tags) {
+                const currentTags = new Set(parsed.current_tags)
+                tagsToAdd = parsed.note.tags.filter(tag => !currentTags.has(tag))
+            } else {
+                tagsToAdd = parsed.note.tags
+            }
+
+            if (tagsToAdd.length > 0) {
+                actions.push(
+                    AnkiConnect.addTags([parsed.identifier], tagsToAdd.join(" "))
+                )
+            }
         }
         return AnkiConnect.multi(actions)
     }

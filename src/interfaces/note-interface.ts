@@ -11,5 +11,6 @@ export interface AnkiConnectNote {
 
 export interface AnkiConnectNoteAndID {
 	note: AnkiConnectNote,
-	identifier: number | null
+	identifier: number | null,
+	current_tags?: string[]
 }

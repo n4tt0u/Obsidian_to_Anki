@@ -278,6 +278,11 @@ export class FileManager {
                 temp.push(...note_response.cards)
             }
             file.card_ids = temp
+            for (let j = 0; j < file_response.length; j++) {
+                if (file.notes_to_edit[j] && file.notes_to_edit[j].identifier === file_response[j].noteId) {
+                    file.notes_to_edit[j].current_tags = file_response[j].tags
+                }
+            }
         }
         for (let index in this.ownFiles) {
             let i: number = parseInt(index)
