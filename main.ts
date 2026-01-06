@@ -609,9 +609,16 @@ export default class MyPlugin extends Plugin {
 	}
 
 	private applyCloze(editor: Editor, selection: string) {
-		const fileContent = editor.getValue();
+		const startLine = editor.getCursor("from").line;
+		const endLine = editor.getCursor("to").line;
+		let contextContent = "";
+
+		for (let i = startLine; i <= endLine; i++) {
+			contextContent += editor.getLine(i) + "\n";
+		}
+
 		const regex = /{{c(\d+)::/g;
-		const matches = fileContent.matchAll(regex);
+		const matches = contextContent.matchAll(regex);
 		const existingNumbers = new Set<number>();
 		for (const match of matches) {
 			existingNumbers.add(parseInt(match[1], 10));
