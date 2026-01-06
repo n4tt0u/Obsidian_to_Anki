@@ -318,7 +318,7 @@ export class FileManager {
         console.info("Requesting tags to be replaced...")
         for (let file of this.ownFiles) {
             let rem = file.getClearTags()
-            if (rem.params.notes.length) {
+            if (rem.params.actions && rem.params.actions.length) {
                 temp.push(rem)
             }
         }
